@@ -2,7 +2,8 @@ import random
 from datetime import datetime
 import os
 import threading
-import sys  # Нужно для остановки программы
+import sys 
+import json
 
 # >basis setings assistent<#
 
@@ -26,6 +27,54 @@ def load_persona(filename="persona.txt"):
 
 PERSONALITY = load_persona()
 
+mood = random.choice(["(дружній)", "(жартівливий)", "(підтримуючий)"])
+
+#>@<#
+
+def load_user():
+    if os.path.exists("user.json"):
+        try: 
+            with open("user.json", "r") as f:
+                text = f.read().strip() 
+                if not text:
+                    return None
+                data = json.loads(text)
+                return data.get("name")
+        except Exception:
+            return None
+    return None 
+
+
+def get_user():
+    user = load_user()   
+    if user:
+        return user
+    
+    print(f"{NAME}: Скинь свій паспорт, ну так, щоб я знав хто ти?")
+    while True:
+        ask_user = input("you: ").strip()
+        if not ask_user:
+            print(f"{NAME}: Огизок, по новому!")
+        else:
+            with open("user.json", "w") as f:   
+                json.dump({"name":ask_user}, f)
+            return ask_user
+         
+    
+def add_note():
+    print(f"{NAME}: пиши мені, паспортні данні.")  
+    text = input("Ти: ")
+    with open("notes.txt"< "a") as f:
+        f.write(text)
+    return "Усьо, Very-good"
+
+def read_note():
+    pass
+   
+    
+    
+    
+
 # >СПИСОК СЛІВ<#
 
 motivates = ["не сумуй", "поплач", "все сможеш"]
@@ -40,8 +89,8 @@ greatings = ["Ку", "Що потрібо?", "Хєй", "Ку>, чим допом
 jokes = ["колобок повесился", "куплю гараж", "смішно, аж плакати хочеться"]
 farewells = ["Давай, буду плакать... Be (3", "Оффлайн. Не скучай.", "Связь разорвана.", "Ну и иди... работать. ББ."]
 
-
 # >random helpers<#
+
 def random_fallbaks():
     return random.choice(fallbacks)
 def random_empety():
@@ -55,16 +104,16 @@ def random_gretings():
 def random_jokes():
     return random.choice(jokes)
 
+#><#
 
-# >НОВАЯ ФУНКЦИЯ ОСТАНОВКИ<#
 def stop_bot():
     phrase = random.choice(farewells)
     print(f"\n{NAME}: {phrase}")
     print(">>> SYSTEM SHUTDOWN <<<")
     sys.exit()  # Останавливает скрипт
 
+# >Р.Т.З.Т.С.Г.Н.З.К.Г.<#
 
-# >Функция таймера (если долго молчать)<#
 def input_with_timeout(prompt, timeout=60):
     def on_timeout():
         print(f"\n{NAME}: Алло? Прием? Я сейчас уйду в спящий режим...")
@@ -78,27 +127,27 @@ def input_with_timeout(prompt, timeout=60):
     finally:
         t.cancel()
 
-
 # >analyze_text<#
+
 def analyze_text(text):
     if not text:
         return "empty"
-    # Добавил больше слов для выхода
-    elif "бувай" in text or "до зустрічі" in text or "стоп" in text or "выход" in text or "exit" in text:
-        return "exit"
     elif "жарт" in text or "сміши" in text:
         return "joke"
     elif "мотив" in text or "порада" in text:
         return "motivate"
+    elif "хто ти" in text or "що ти" in text:
+        return "personal"
+    elif "привіт" in text or "вітаю" in text or "хай" in text:
+        return "greating"
     elif "час" in text:
         return "time"
-    elif "пустота" in text:
-        return "fallback"
-    elif "друга сторона" in text or "альтер е-го" in text:
-        return "personal_switch"
-    elif "имя" in text or "name" in text:
-        return "personal_name"
-
+    elif "збережи" in text or "read" in text:
+        return "add note"
+    elif  "" in text or "" in text:
+        return "read note"
+    elif "бувай" in text or "П.О.С." in text:
+        return "exit"
     return "unknown"
 
 
@@ -106,10 +155,14 @@ def get_response(text):
     t = text.lower()
     tag = analyze_text(t)
 
-    # Если тег exit — возвращаем кодовое слово, чтобы main() вызвал функцию остановки
+#>Be!<# 
+   
     if tag == "exit":
         return "EXIT_NOW"
-
+    if "add note" in tag:
+        return add_note()
+    if "read note" in tag:
+        return read_note()
     if "personal_switch" in tag:
         return f"{NAME}: {random_fallbaks()}"
     if "personal_name" in tag:
@@ -129,19 +182,14 @@ def get_response(text):
 # >MAIN<#
 def main():
     print(PERSONALITY)
-    print(f"{NAME}: {random_gretings()}")
-
+    name = get_user()
+    print(f"{NAME}: {name}, {random_gretings()}. Сьогодні я {mood}")
     while True:
-        # Ждет ввода 60 секунд, потом ругается
-        user = input_with_timeout("Omega: ", timeout=60)
-
+        user = input_with_timeout("Omega: ", timeout=35)
         response = get_response(user)
-
-        # Проверяем, не пора ли закрываться
         if response == "EXIT_NOW":
-            stop_bot()  # Вызываем нашу новую функцию
-            break  # На всякий случай, хотя sys.exit() уже все остановит
-
+            stop_bot()  
+            break
         print(response)
 
 
