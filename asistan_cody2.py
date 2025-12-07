@@ -44,24 +44,14 @@ farewells = ["Давай, буду плакать... Be (3", "Оффлайн. Н
 # >random helpers<#
 def random_fallbaks():
     return random.choice(fallbacks)
-
-
 def random_empety():
     return random.choice(empty)
-
-
 def random_motivation():
     return random.choice(motivates)
-
-
 def random_personal():
     return random.choice(personal)
-
-
 def random_gretings():
     return random.choice(greatings)
-
-
 def random_jokes():
     return random.choice(jokes)
 
@@ -156,4 +146,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
